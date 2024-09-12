@@ -4,22 +4,23 @@ import datetime
 
 def material(material) -> str:
     var = [
-        "A) Lead",
-        "B) Lead-lined galvanized",
-        "C) Galvanized" "D) Copper",
-        "E) Cast iron - lined",
-        "F) Cast iron - unlined",
-        "G) HDPE - high density polyethylene",
-        "H) PVC - polyvinyl chloride",
-        "J) CPVC - chlorine treated PVC",
-        "K) PEX - cross-linked polyethylene",
-        "L) ABS - acrylonitrile butadiene styrene",
-        "M) PB - Polybutylene",
-        "O) Asbestos cement",
-        "P) Other non-lead material",
-        "Q) Unknown - Likely Lead",
-        "R) Unknown - Unlikely Lead",
-        "S) Unknown",
+        "A) Lead",  # 0
+        "B) Lead-lined galvanized",  # 1
+        "C) Galvanized",  # 2
+        "D) Copper",  # 3
+        "E) Cast iron - lined",  # 4
+        "F) Cast iron - unlined",  # 5
+        "G) HDPE - high density polyethylene",  # 6
+        "H) PVC - polyvinyl chloride",  # 7
+        "J) CPVC - chlorine treated PVC",  # 8
+        "K) PEX - cross-linked polyethylene",  # 9
+        "L) ABS - acrylonitrile butadiene styrene",  # 10
+        "M) PB - Polybutylene",  # 11
+        "O) Asbestos cement",  # 12
+        "P) Other non-lead material",  # 13
+        "Q) Unknown - Likely Lead",  # 14
+        "R) Unknown - Unlikely Lead",  # 15
+        "S) Unknown",  # 16
     ]
     if material == "LD":
         return var[0]
@@ -36,9 +37,9 @@ def material(material) -> str:
     elif material == "GALV":
         return var[2]
     elif material == "UNK-NL":
-        return var[14]
-    elif material == "UNK":
         return var[15]
+    elif material == "UNK":
+        return var[16]
     else:
         return None
 
@@ -60,7 +61,9 @@ def install_date_range(date) -> str:
         "O) 2011 - 2020",
         "P) 2021 - 2030",
     ]
-    utility_install_date = datetime.strptime(date, "%d/%m/%Y")
+    if not date:
+        return None
+    utility_install_date = datetime.datetime.strptime(date, "%m/%d/%Y").date()
     if utility_install_date < datetime.date(1901, 1, 1):
         return var[0]
     elif (
@@ -166,173 +169,179 @@ def translate_csv(input_file, output_file):
     with open(input_file, mode="r", encoding="utf-8") as infile:
         reader = csv.DictReader(infile)
 
-    # Open the output CSV file for writing
-    with open(output_file, mode="w", newline="", encoding="utf-8") as outfile:
-        writer = csv.writer(outfile)
+        # Open the output CSV file for writing
+        with open(output_file, mode="w", newline="", encoding="utf-8") as outfile:
+            writer = csv.writer(outfile)
 
-        for row in reader:
-            print(row)
-            new_row = []
-            ###################################
-            ## Service Line Basic Information
-            ###################################
-            # Unique Service Line ID (Required)
-            new_row.append(row["ID"])
+            for row in reader:
 
-            # Record Type
-            var = ["Initial", "Update", "Add", "Inactive"]
-            new_row.append(var[0])
+                new_row = []
+                ###################################
+                ## Service Line Basic Information
+                ###################################
+                # Unique Service Line ID (Required)
+                new_row.append(row["ID"])
 
-            # Date Replacement Completed
-            new_row.append(None)
-
-            # Ownership Type
-            var = ["Joint", "System", "Customer"]
-            new_row.append(var[0])
-
-            # Street Address 1
-            new_row.append(row["Street"])
-
-            # Street Address 2
-            new_row.append(None)
-
-            # City or Township
-            new_row.append(row["City"])
-
-            # Zip Code
-            new_row.append(row["Zipcode"])
-
-            # School?
-            var = ["No", "Yes - Elementary", "Yes - Secondary", "Yes - All Grades"]
-            if row["Building Type"] == "Elementary School":
-                new_row.append(var[1])
-            elif row["Building Type"] == "School Non-Elementary":
-                new_row.append(var[2])
-            else:
+                # Record Type
+                var = ["Initial", "Update", "Add", "Inactive"]
                 new_row.append(var[0])
 
-            # Childcare Facility?
-            var = ["No", "Yes"]
-            if row["Building Type"] in ["Day Care", "Residential & In-Home Day Care"]:
-                new_row.append(var[1])
-            else:
-                new_row.append(var[0])
-
-            ###################################
-            ## System-Owned Portion of Service Line
-            ###################################
-            # Material
-            new_row.append(material(row["Utility Materials"]))
-
-            # Was Material Ever Previously Lead?
-            var = ["Yes", "No", "Not sure"]
-            if row["Utility Previously Lead"] == "Yes":
-                new_row.append(var[0])
-            elif row["Utility Previously Lead"] == "No":
-                new_row.append(var[1])
-            elif row["Utility Previously Lead"] == "Unknown":
-                new_row.append(var[2])
-            else:
+                # Date Replacement Completed
                 new_row.append(None)
 
-            # Lead Pigtail, Gooseneck or Connector Upstream?
-            var = ["Yes", "No", "Not sure"]
-            new_row.append(None)
+                # Ownership Type
+                var = ["Joint", "System", "Customer"]
+                new_row.append(var[0])
 
-            # Installation Date Range
-            new_row.append(install_date_range(row["Utility Installation Dates"]))
+                # Street Address 1
+                new_row.append(row["Street"])
 
-            # Installation Date Specific
-            new_row.append(row["Utility Installation Dates"])
-
-            # "Diameter (in inches)"
-            new_row.append(row["Utility Diameters"])
-
-            # "Basis of Material Classification - Non-Field Method"
-            new_row.append(non_field_method(row["Utility Verification Method"]))
-
-            ##### DUPLICATE?!?!
-            # "Basis of Material Classification - Non-Field Method"
-            new_row.append(non_field_method(row["Utility Verification Method"]))
-
-            # "Basis of Material Classification - Field Method"
-            new_row.append(field_method(row["Utility Verification Method"]))
-
-            # Date of Field Verification
-            new_row.append(row["Utility Verification date"])
-
-            # Additional Comments
-            new_row.append(None)
-
-            ###################################
-            ## Customer-Owned Portion of Service Line
-            ###################################
-            # Material
-            new_row.append(material(row["Private Materials"]))
-
-            # Lead Pigtail, Gooseneck or Connector Upstream?
-            var = ["Yes", "No", "Not sure"]
-            new_row.append(None)
-
-            # Installation Date Range
-            new_row.append(install_date_range(row["Private Installation Dates"]))
-
-            # Installation Date Specific
-            new_row.append(row["Private Installation Dates"])
-
-            # "Basis of Material Classification - Non-Field Method"
-            new_row.append(non_field_method(row["Private Verification Method"]))
-
-            ##### DUPLICATE?!?!
-            # "Basis of Material Classification - Non-Field Method"
-            # new_row.append(non_field_method(row["Private Verification Method"]))
-            new_row.append(None)
-
-            # "Basis of Material Classification - Field Method"
-            new_row.append(field_method(row["Private Verification Method"]))
-
-            # Date of Field Verification
-            if row["Private Field Verified"] == "Yes":
-                new_row.append(row["Private Verification Date"])
-            else:
+                # Street Address 2
                 new_row.append(None)
 
-            # Additional Comments
-            new_row.append(None)
+                # City or Township
+                new_row.append(row["City"])
 
-            ###################################
-            ## Information to Assign Tap Monitoring Tiering
-            ###################################
-            # "Service Line Connected To:"
-            var = [
-                "S) Single family residence",
-                "M) Multi family residence",
-                "O) Building/Other",
-            ]
-            if row["Building Type"] == "Single-Family":
-                new_row.append(var[0])
-            elif row["Building Type"] == "Multi-Family":
-                new_row.append(var[1])
-            else:
-                new_row.append(var[2])
+                # Zip Code
+                new_row.append(row["Zipcode"])
 
-            # POE Treatment Present?
-            var = ["Yes", "No", "Not sure"]
-            new_row.append(None)
+                # School?
+                var = ["No", "Yes - Elementary", "Yes - Secondary", "Yes - All Grades"]
+                if row["Building Type"] == "Elementary School":
+                    new_row.append(var[1])
+                elif row["Building Type"] == "School Non-Elementary":
+                    new_row.append(var[2])
+                else:
+                    new_row.append(var[0])
 
-            # Interior Building Plumbing Contains Lead Solder?
-            var = ["Yes", "No", "Not sure"]
-            new_row.append(None)
+                # Childcare Facility?
+                var = ["No", "Yes"]
+                if row["Building Type"] in [
+                    "Day Care",
+                    "Residential & In-Home Day Care",
+                ]:
+                    new_row.append(var[1])
+                else:
+                    new_row.append(var[0])
 
-            # Current LCR Sampling Site?
-            var = ["No", "Yes"]
-            new_row.append(None)
+                ###################################
+                ## System-Owned Portion of Service Line
+                ###################################
+                # Material
+                new_row.append(material(row["Utility Materials"]))
 
-            if len(new_row) != 34:
-                break
+                # Was Material Ever Previously Lead?
+                var = ["Yes", "No", "Not sure"]
+                if row["Utility Previously Lead"] == "Yes":
+                    new_row.append(var[0])
+                elif row["Utility Previously Lead"] == "No":
+                    new_row.append(var[1])
+                elif row["Utility Previously Lead"] == "Unknown":
+                    new_row.append(var[2])
+                else:
+                    new_row.append(None)
 
-            # Write the modified row to the output CSV
-            writer.writerow(new_row)
+                # Lead Pigtail, Gooseneck or Connector Upstream?
+                var = ["Yes", "No", "Not sure"]
+                new_row.append(None)
+
+                # Installation Date Range
+                new_row.append(install_date_range(row["Utility Installation Dates"]))
+
+                # Installation Date Specific
+                new_row.append(row["Utility Installation Dates"])
+
+                # "Diameter (in inches)"
+                if row["Utility Diameters"] != "99":
+                    new_row.append(row["Utility Diameters"])
+                else:
+                    new_row.append(None)
+
+                # "Basis of Material Classification - Non-Field Method"
+                new_row.append(non_field_method(row["Utility Verification Method"]))
+
+                ##### DUPLICATE?!?!
+                # "Basis of Material Classification - Non-Field Method"
+                new_row.append(non_field_method(row["Utility Verification Method"]))
+
+                # "Basis of Material Classification - Field Method"
+                new_row.append(field_method(row["Utility Verification Method"]))
+
+                # Date of Field Verification
+                new_row.append(row["Utility Verification date"])
+
+                # Additional Comments
+                new_row.append(None)
+
+                ###################################
+                ## Customer-Owned Portion of Service Line
+                ###################################
+                # Material
+                new_row.append(material(row["Private Materials"]))
+
+                # Lead Pigtail, Gooseneck or Connector Upstream?
+                var = ["Yes", "No", "Not sure"]
+                new_row.append(None)
+
+                # Installation Date Range
+                new_row.append(install_date_range(row["Private Installation Dates"]))
+
+                # Installation Date Specific
+                new_row.append(row["Private Installation Dates"])
+
+                # "Basis of Material Classification - Non-Field Method"
+                new_row.append(non_field_method(row["Private Verification Method"]))
+
+                ##### DUPLICATE?!?!
+                # "Basis of Material Classification - Non-Field Method"
+                # new_row.append(non_field_method(row["Private Verification Method"]))
+                new_row.append(None)
+
+                # "Basis of Material Classification - Field Method"
+                new_row.append(field_method(row["Private Verification Method"]))
+
+                # Date of Field Verification
+                if row["Private Field Verified"] == "Yes":
+                    new_row.append(row["Private Verification Date"])
+                else:
+                    new_row.append(None)
+
+                # Additional Comments
+                new_row.append(None)
+
+                ###################################
+                ## Information to Assign Tap Monitoring Tiering
+                ###################################
+                # "Service Line Connected To:"
+                var = [
+                    "S) Single family residence",
+                    "M) Multi family residence",
+                    "O) Building/Other",
+                ]
+                if row["Building Type"] == "Single-Family":
+                    new_row.append(var[0])
+                elif row["Building Type"] == "Multi-Family":
+                    new_row.append(var[1])
+                else:
+                    new_row.append(var[2])
+
+                # POE Treatment Present?
+                var = ["Yes", "No", "Not sure"]
+                new_row.append(None)
+
+                # Interior Building Plumbing Contains Lead Solder?
+                var = ["Yes", "No", "Not sure"]
+                new_row.append(None)
+
+                # Current LCR Sampling Site?
+                var = ["No", "Yes"]
+                new_row.append(None)
+
+                if len(new_row) != 34:
+                    break
+
+                # Write the modified row to the output CSV
+                writer.writerow(new_row)
 
     print(f"Translation complete. Data saved to {output_file}")
 
