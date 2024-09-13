@@ -256,13 +256,20 @@ def translate(input_data):
 
         ##### DUPLICATE?!?!
         # "Basis of Material Classification - Non-Field Method"
-        new_row.append(non_field_method(row["Utility Verification Method"]))
+        # new_row.append(non_field_method(row["Utility Verification Method"]))
+        new_row.append(None)
 
         # "Basis of Material Classification - Field Method"
-        new_row.append(field_method(row["Utility Verification Method"]))
+        if row["Utility Field Verified"] == "Yes":
+            new_row.append(field_method(row["Utility Verification Method"]))
+        else:
+            new_row.append(None)
 
         # Date of Field Verification
-        new_row.append(row["Utility Verification date"])
+        if row["Utility Field Verified"] == "Yes":
+            new_row.append(row["Utility Verification date"])
+        else:
+            new_row.append(None)
 
         # Additional Comments
         new_row.append(None)
