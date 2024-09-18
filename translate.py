@@ -167,6 +167,64 @@ def non_field_method(method) -> str:
 
 def translate(input_data):
     output_data = []
+
+    address_store = []
+    address_store_increment = []
+    letters = [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Y",
+        "Z",
+        "AA",
+        "AB",
+        "AC",
+        "AD",
+        "AE",
+        "AF",
+        "AG",
+        "AH",
+        "AI",
+        "AJ",
+        "AK",
+        "AL",
+        "AM",
+        "AN",
+        "AO",
+        "AP",
+        "AQ",
+        "AR",
+        "AS",
+        "AT",
+        "AU",
+        "AV",
+        "AW",
+        "AX",
+        "AY",
+        "AZ",
+    ]
+
     for row in input_data:
 
         new_row = []
@@ -191,7 +249,14 @@ def translate(input_data):
         new_row.append(row["Street"])
 
         # Street Address 2
-        new_row.append(None)
+        if row["Street"] in address_store:
+            i = address_store.index(row["Street"])
+            address_store_increment[i] += 1
+            new_row.append(letters[address_store_increment[i]])
+        else:
+            address_store.append(row["Street"])
+            address_store_increment.append(0)
+            new_row.append(letters[0])
 
         # City or Township
         new_row.append(row["City"])
@@ -328,15 +393,15 @@ def translate(input_data):
 
         # POE Treatment Present?
         var = ["Yes", "No", "Not sure"]
-        new_row.append(None)
+        new_row.append(var[2])
 
         # Interior Building Plumbing Contains Lead Solder?
         var = ["Yes", "No", "Not sure"]
-        new_row.append(None)
+        new_row.append(var[2])
 
         # Current LCR Sampling Site?
         var = ["No", "Yes"]
-        new_row.append(None)
+        new_row.append(var[0])
 
         # Check to make sure we have all 34 values
         if len(new_row) != 34:
@@ -358,6 +423,43 @@ def translate_to_csv(input_file, output_file):
             writer = csv.writer(outfile)
 
             data = translate(reader)
+            header = [
+                "Unique Service Line ID (Required)",
+                "Record Type",
+                "Date Replacement Completed",
+                "Ownership Type",
+                "Street Address 1",
+                "Street Address 2",
+                "City or Township",
+                "Zip Code",
+                "School?",
+                "Childcare Facility?",
+                "Material",
+                "Was Material Ever Previously Lead?",
+                "Lead Pigtail, Gooseneck or Connector Upstream?",
+                "Installation Date Range",
+                "Installation Date Specific",
+                "Diameter (in inches)",
+                "Basis of Material Classification - Non-Field Method",
+                "Basis of Material Classification - Non-Field Method",
+                "Basis of Material Classification - Field Method",
+                "Date of Field Verification",
+                "Additional Comments",
+                "Material",
+                "Lead Pigtail, Gooseneck or Connector Upstream?",
+                "Installation Date Range",
+                "Installation Date Specific",
+                "Basis of Material Classification -Non-Field Method",
+                "Basis of Material Classification - Non-Field Method",
+                "Basis of Material Classification - Field Method",
+                "Date of Field Verification",
+                "Additional Comments",
+                "Service Line Connected To:",
+                "POE Treatment Present?",
+                "Interior Building Plumbing Contains Lead Solder?",
+                "Current LCR Sampling Site?",
+            ]
+            writer.writerow(header)
             for row in data:
                 # Write the modified row to the output CSV
                 writer.writerow(row)
@@ -399,10 +501,12 @@ def translate_to_xlsm(input_csv, input_xlsm, output_xlsm):
 
 
 # Example usage
-input_csv = "input.csv"  # Replace with your input CSV file
+input_csv = (
+    "Inventory-LancasterPA-1725901447560.csv"  # Replace with your input CSV file
+)
 output_csv = "translated_output.csv"  # Replace with the output CSV file
-# translate_csv(input_csv, output_csv)
+translate_to_csv(input_csv, output_csv)
 
-input_xlsm = "SERVICE_LINE_INVENTORY_FORM.xlsm"
-output_xlsm = "output.xlsm"
-translate_to_xlsm(input_csv, input_xlsm, output_xlsm)
+# input_xlsm = "SERVICE_LINE_INVENTORY_FORM.xlsm"
+# output_xlsm = "output.xlsm"
+# translate_to_xlsm(input_csv, input_xlsm, output_xlsm)
