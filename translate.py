@@ -302,7 +302,7 @@ def translate(input_data):
 
         # Lead Pigtail, Gooseneck or Connector Upstream?
         var = ["Yes", "No", "Not sure"]
-        new_row.append(None)
+        new_row.append(var[2])
 
         # Installation Date Range
         new_row.append(install_date_range(row["Utility Installation Dates"]))
@@ -319,7 +319,7 @@ def translate(input_data):
         # "Basis of Material Classification - Non-Field Method"
         new_row.append(non_field_method(row["Utility Verification Method"]))
 
-        ##### DUPLICATE?!?!
+        ##### Hold for statistical Model
         # "Basis of Material Classification - Non-Field Method"
         # new_row.append(non_field_method(row["Utility Verification Method"]))
         new_row.append(None)
@@ -347,7 +347,7 @@ def translate(input_data):
 
         # Lead Pigtail, Gooseneck or Connector Upstream?
         var = ["Yes", "No", "Not sure"]
-        new_row.append(None)
+        new_row.append(var[2])
 
         # Installation Date Range
         new_row.append(install_date_range(row["Private Installation Dates"]))
@@ -358,7 +358,7 @@ def translate(input_data):
         # "Basis of Material Classification - Non-Field Method"
         new_row.append(non_field_method(row["Private Verification Method"]))
 
-        ##### DUPLICATE?!?!
+        ##### Hold for statistical Model
         # "Basis of Material Classification - Non-Field Method"
         # new_row.append(non_field_method(row["Private Verification Method"]))
         new_row.append(None)
@@ -397,7 +397,14 @@ def translate(input_data):
 
         # Interior Building Plumbing Contains Lead Solder?
         var = ["Yes", "No", "Not sure"]
-        new_row.append(var[2])
+        if row["Plumbing Contains Lead Solder"] == "Unknown":
+            new_row.append(var[2])
+        elif row["Plumbing Contains Lead Solder"] == "Yes":
+            new_row.append(var[0])
+        elif row["Plumbing Contains Lead Solder"] == "No":
+            new_row.append(var[1])
+        else:
+            new_row.append(var[2])
 
         # Current LCR Sampling Site?
         var = ["No", "Yes"]
@@ -501,11 +508,11 @@ def translate_to_xlsm(input_csv, input_xlsm, output_xlsm):
 
 
 # Example usage
-input_csv = (
-    "Inventory-LancasterPA-1725901447560.csv"  # Replace with your input CSV file
-)
-output_csv = "translated_output.csv"  # Replace with the output CSV file
-translate_to_csv(input_csv, output_csv)
+# input_csv = (
+#     "Inventory-LancasterPA-1726680399805.csv"  # Replace with your input CSV file
+# )
+# output_csv = "translated_output.csv"  # Replace with the output CSV file
+# translate_to_csv(input_csv, output_csv)
 
 # input_xlsm = "SERVICE_LINE_INVENTORY_FORM.xlsm"
 # output_xlsm = "output.xlsm"
