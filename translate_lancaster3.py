@@ -406,17 +406,7 @@ def translate(input_data):
                 utility_specific_date = datetime.datetime.strptime(
                     new_row_dict["[Utility] Installation Date Specific"], "%m/%d/%Y"
                 ).date()
-        if (
-            "Installation Date After Lead Ban" in row["Utility Material Method"]
-            and (
-                utility_specific_date
-                and utility_specific_date >= datetime.date(1991, 1, 1)
-            )
-            or (
-                utility_specific_date
-                and utility_specific_date >= datetime.date(1991, 1, 1)
-            )
-        ):
+        if utility_specific_date and utility_specific_date >= datetime.date(1991, 1, 1):
             # "Basis of Material Classification - Non-Field Method"
             new_row_dict[
                 "[Utility]1 Basis of Material Classification - Non-Field Method"
@@ -426,9 +416,11 @@ def translate(input_data):
                 "[Utility]2 Basis of Material Classification - Non-Field Method"
             ] = f"D) Other - enter in Comments field"
             comments_ut.append(
-                f"We have high confidence in this record that the service line is non-lead due to the City of Lancaster PA lead ban in 1991."
+                f"We have high confidence in this tap card from {new_row_dict['[Utility] Installation Date Specific']} that the service line is non-lead due to the City of Lancaster PA lead ban in 1991."
             )
-        elif 'Diameter > 2"' in row["Utility Material Method"]:
+        elif (
+            utility_specific_date and 'Diameter > 2"' in row["Utility Material Method"]
+        ):
             new_row_dict[
                 "[Utility]1 Basis of Material Classification - Non-Field Method"
             ] = f"A) Records Review"
@@ -441,23 +433,48 @@ def translate(input_data):
             )
 
         ################ NEW ################
-        elif row["Utility Material Method"] == "Records - Other" and new_row_dict[
-            "[Utility] Material"
-        ] not in [
-            "Q) Unknown - Likely Lead",  # 14
-            "R) Unknown - Unlikely Lead",  # 15
-            "S) Unknown",  # 16
-        ]:
+        # elif (
+        #     row["Utility Material Method"] == "Records - Other"
+        #     and new_row_dict["[Utility] Material"]
+        #     not in [
+        #         "Q) Unknown - Likely Lead",  # 14
+        #         "R) Unknown - Unlikely Lead",  # 15
+        #         "S) Unknown",  # 16
+        #     ]
+        #     and new_row_dict["[Utility] Installation Date Specific"]
+        # ):
+        #     new_row_dict[
+        #         "[Utility]1 Basis of Material Classification - Non-Field Method"
+        #     ] = f"A) Records Review"
+        #     # "Basis of Material Classification - Non-Field Method"
+        #     new_row_dict[
+        #         "[Utility]2 Basis of Material Classification - Non-Field Method"
+        #     ] = "D) Other - enter in Comments field"
+        #     comments_ut.append(
+        #         f"We have high confidence in this tap card from {new_row_dict['[Utility] Installation Date Specific']}"
+        #     )
+
+        elif new_row_dict["[Utility] Material"] == "A) Lead":
             new_row_dict[
                 "[Utility]1 Basis of Material Classification - Non-Field Method"
             ] = f"A) Records Review"
-            # "Basis of Material Classification - Non-Field Method"
             new_row_dict[
                 "[Utility]2 Basis of Material Classification - Non-Field Method"
-            ] = "D) Other - enter in Comments field"
+            ] = f"D) Other - enter in Comments field"
+            new_row_dict["[Utility] Additional Comments"] = None
             comments_ut.append(
-                f"We have high confidence in this tap card from {new_row_dict['[Utility] Installation Date Specific']}"
+                f"We have high confidence in this record that the material is lead."
             )
+
+        else:
+            new_row_dict["[Utility] Material"] = "S) Unknown"
+            new_row_dict[
+                "[Utility]1 Basis of Material Classification - Non-Field Method"
+            ] = None
+            new_row_dict[
+                "[Utility]2 Basis of Material Classification - Non-Field Method"
+            ] = None
+            new_row_dict["[Utility] Additional Comments"] = None
         # else:
         #     new_row_dict[
         #         "[Utility]1 Basis of Material Classification - Non-Field Method"
@@ -578,10 +595,21 @@ def translate(input_data):
                 private_specific_date = datetime.datetime.strptime(
                     new_row_dict["[Private] Installation Date Specific"], "%m/%d/%Y"
                 ).date()
-        if "Installation Date After Lead Ban" in row["Private Material Method"] or (
-            private_specific_date and private_specific_date >= datetime.date(1991, 1, 1)
+        if private_specific_date and private_specific_date >= datetime.date(1991, 1, 1):
+            # "Basis of Material Classification - Non-Field Method"
+            new_row_dict[
+                "[Private]1 Basis of Material Classification - Non-Field Method"
+            ] = f"A) Records Review"
+            # "Basis of Material Classification - Non-Field Method"
+            new_row_dict[
+                "[Private]2 Basis of Material Classification - Non-Field Method"
+            ] = f"D) Other - enter in Comments field"
+            comments_priv.append(
+                f"We have high confidence in this record from {new_row_dict['[Private] Installation Date Specific']} that the service line is non-lead due to the City of Lancaster PA lead ban in 1991."
+            )
+        elif (
+            private_specific_date and 'Diameter > 2"' in row["Private Material Method"]
         ):
-            # "Basis of Material Classification - Non-Field Method"
             new_row_dict[
                 "[Private]1 Basis of Material Classification - Non-Field Method"
             ] = f"A) Records Review"
@@ -590,41 +618,44 @@ def translate(input_data):
                 "[Private]2 Basis of Material Classification - Non-Field Method"
             ] = f"D) Other - enter in Comments field"
             comments_priv.append(
-                f"We have high confidence in this record that the service line is non-lead due to the City of Lancaster PA lead ban in 1991."
+                f"We have high confidence in this record from billing information that the service line diameter is > 2 inches."
             )
-        elif 'Diameter > 2"' in row["Private Material Method"]:
-            new_row_dict[
-                "[Private]1 Basis of Material Classification - Non-Field Method"
-            ] = f"A) Records Review"
-            # "Basis of Material Classification - Non-Field Method"
-            new_row_dict[
-                "[Private]2 Basis of Material Classification - Non-Field Method"
-            ] = f"D) Other - enter in Comments field"
-            comments_priv.append(
-                f"We have high confidence in this record from {new_row_dict['[Utility] Installation Date Specific']} that the service line diameter is > 2 inches."
-            )
-        elif row["Private Material Method"] == "Records - Other" and new_row_dict[
-            "[Private] Material"
-        ] not in [
-            "Q) Unknown - Likely Lead",  # 14
-            "R) Unknown - Unlikely Lead",  # 15
-            "S) Unknown",  # 16
-        ]:
-            new_row_dict[
-                "[Private]1 Basis of Material Classification - Non-Field Method"
-            ] = f"A) Records Review"
-            # "Basis of Material Classification - Non-Field Method"
-            new_row_dict[
-                "[Private]2 Basis of Material Classification - Non-Field Method"
-            ] = f"D) Other - enter in Comments field"
-            comments_priv.append(f"We have high confidence in this record.")
-        # else:
+        # elif row["Private Material Method"] == "Records - Other" and new_row_dict[
+        #     "[Private] Material"
+        # ] not in [
+        #     "Q) Unknown - Likely Lead",  # 14
+        #     "R) Unknown - Unlikely Lead",  # 15
+        #     "S) Unknown",  # 16
+        # ]:
         #     new_row_dict[
         #         "[Private]1 Basis of Material Classification - Non-Field Method"
-        #     ] = non_field_method(row["Private Verification Method"])
+        #     ] = f"A) Records Review"
+        #     # "Basis of Material Classification - Non-Field Method"
         #     new_row_dict[
         #         "[Private]2 Basis of Material Classification - Non-Field Method"
-        #     ] = None
+        #     ] = f"D) Other - enter in Comments field"
+        #     comments_priv.append(f"We have high confidence in this record.")
+        elif new_row_dict["[Private] Material"] == "A) Lead":
+            new_row_dict[
+                "[Private]1 Basis of Material Classification - Non-Field Method"
+            ] = f"A) Records Review"
+            new_row_dict[
+                "[Private]2 Basis of Material Classification - Non-Field Method"
+            ] = f"D) Other - enter in Comments field"
+            new_row_dict["[Private] Additional Comments"] = None
+            comments_priv.append(
+                f"We have high confidence in this record that the material is lead."
+            )
+
+        else:
+            new_row_dict["[Private] Material"] = "S) Unknown"
+            new_row_dict[
+                "[Private]1 Basis of Material Classification - Non-Field Method"
+            ] = None
+            new_row_dict[
+                "[Private]2 Basis of Material Classification - Non-Field Method"
+            ] = None
+            new_row_dict["[Private] Additional Comments"] = None
 
         # "Basis of Material Classification - Field Method"
         new_row_dict["[Private] Basis of Material Classification - Field Method"] = (
@@ -705,6 +736,28 @@ def translate(input_data):
         # Store the modified row
         output_data.append(new_row_dict)
     return output_data
+
+
+def post_translate(input_data):
+    """Take the Leadcast translation output and force correct the materials based on abcesec of verifications.
+
+    Args:
+        input_data (_type_): output from translate()
+    """
+
+    for record in input_data:
+        # Utility side
+        if not record["[Utility] Installation Date Specific"]:
+            record["[Utility] Material"] = "S) Unknown"
+            record["[Utility]1 Basis of Material Classification - Non-Field Method"] = (
+                None
+            )
+            record["[Utility]2 Basis of Material Classification - Non-Field Method"] = (
+                None
+            )
+            record["[Utility] Additional Comments"] = None
+
+        # Private side
 
 
 def translate_to_csv(input_file, output_file):
