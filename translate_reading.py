@@ -610,7 +610,7 @@ def translate_to_xlsm(input_csv, input_xlsm, output_xlsm):
         # E9 starting cell in blank inventory
         # start_row = 9
         # start_col = 5
-        curr_row = 9
+        curr_row = 10
         curr_col = 5
 
         for row in data:
