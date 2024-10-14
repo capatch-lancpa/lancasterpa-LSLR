@@ -381,7 +381,7 @@ def translate(input_data):
                 "[Utility]2 Basis of Material Classification - Non-Field Method"
             ] = f"D) Other - enter in Comments field"
             comments_ut.append(
-                f"We have high confidence in this record that the service line is non-lead due to the City of Reading lead ban in 1970."
+                f"We have high confidence in this record that the service line is non-lead due to the City of Reading lead ban in 1976."
             )
         elif row["Utility Material Method"] == 'Diameter > 2"':
             new_row_dict[
@@ -421,9 +421,14 @@ def translate(input_data):
 
         # Date of Field Verification
         if row["Utility Field Verified"] == "Yes":
-            new_row_dict["[Utility] Date of Field Verification"] = row[
-                "Utility Verification date"
+            verification_dates = [
+                d for d in row["Utility Verification date"].split(" | ")
             ]
+            most_recent_date = max(
+                verification_dates,
+                key=lambda d: datetime.datetime.strptime(d, "%m/%d/%Y"),
+            )
+            new_row_dict["[Utility] Date of Field Verification"] = most_recent_date
 
         # Additional Comments for System-Owned
         if row["Utility Materials"] in ["DI", "BR", "PL"]:
@@ -513,7 +518,7 @@ def translate(input_data):
                 "[Private]2 Basis of Material Classification - Non-Field Method"
             ] = f"D) Other - enter in Comments field"
             comments_priv.append(
-                f"We have high confidence in this record that the service line is non-lead due to the City of Reading lead ban in 1970."
+                f"We have high confidence in this record that the service line is non-lead due to the City of Reading lead ban in 1976."
             )
         elif row["Private Material Method"] == 'Diameter > 2"':
             new_row_dict[
@@ -552,9 +557,14 @@ def translate(input_data):
 
         # Date of Field Verification
         if row["Private Field Verified"] == "Yes":
-            new_row_dict["[Private] Date of Field Verification"] = row[
-                "Private Verification Date"
+            verification_dates = [
+                d for d in row["Private Verification Date"].split(" | ")
             ]
+            most_recent_date = max(
+                verification_dates,
+                key=lambda d: datetime.datetime.strptime(d, "%m/%d/%Y"),
+            )
+            new_row_dict["[Private] Date of Field Verification"] = most_recent_date
 
         # Additional Comments for Customer-Owned
         if row["Private Materials"] in ["DI", "BR", "PL"]:
