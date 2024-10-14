@@ -287,6 +287,11 @@ def translate(input_data):
         ## System-Owned Portion of Service Line
         ###################################
         # Material
+        # mat = material(row["Utility Materials"])
+        # if mat:
+        #     new_row.append(mat)
+        # else:
+        #     continue
         new_row.append(material(row["Utility Materials"]))
 
         # Was Material Ever Previously Lead?
@@ -343,6 +348,11 @@ def translate(input_data):
         ## Customer-Owned Portion of Service Line
         ###################################
         # Material
+        # mat = material(row["Private Materials"])
+        # if mat:
+        #     new_row.append(mat)
+        # else:
+        #     continue
         new_row.append(material(row["Private Materials"]))
 
         # Lead Pigtail, Gooseneck or Connector Upstream?
@@ -393,7 +403,14 @@ def translate(input_data):
 
         # POE Treatment Present?
         var = ["Yes", "No", "Not sure"]
-        new_row.append(var[2])
+        if row["POE Filter"] == "Unknown":
+            new_row.append(var[2])
+        elif row["POE Filter"] == "Yes":
+            new_row.append(var[0])
+        elif row["POE Filter"] == "No":
+            new_row.append(var[1])
+        else:
+            new_row.append(var[2])
 
         # Interior Building Plumbing Contains Lead Solder?
         var = ["Yes", "No", "Not sure"]
@@ -408,7 +425,14 @@ def translate(input_data):
 
         # Current LCR Sampling Site?
         var = ["No", "Yes"]
-        new_row.append(var[0])
+        if row["Sample Site Status"] == "Unknown":
+            new_row.append(var[0])
+        elif row["Sample Site Status"] == "Yes":
+            new_row.append(var[1])
+        elif row["Sample Site Status"] == "No":
+            new_row.append(var[0])
+        else:
+            new_row.append(var[0])
 
         # Check to make sure we have all 34 values
         if len(new_row) != 34:
@@ -508,11 +532,11 @@ def translate_to_xlsm(input_csv, input_xlsm, output_xlsm):
 
 
 # Example usage
-# input_csv = (
-#     "Inventory-LancasterPA-1726680399805.csv"  # Replace with your input CSV file
-# )
-# output_csv = "translated_output.csv"  # Replace with the output CSV file
-# translate_to_csv(input_csv, output_csv)
+input_csv = (
+    "Inventory-LancasterPA-1726680399805.csv"  # Replace with your input CSV file
+)
+output_csv = "translated_output.csv"  # Replace with the output CSV file
+translate_to_csv(input_csv, output_csv)
 
 # input_xlsm = "SERVICE_LINE_INVENTORY_FORM.xlsm"
 # output_xlsm = "output.xlsm"
