@@ -215,8 +215,9 @@ def translate(input_data):
             "LEAD CONNECTOR UPSTREAM_2": None,
             "INSTALLATION DECADE_2": None,
             "INSTALLATION DATE_2": None,
-            "NON-LEAD VERIFICATION 1_2": None,
-            "NON-LEAD VERIFICATION 2_2": None,
+            "DIAMETER (IN INCHES)_2": None,
+            "NON-LEAD VERIFICATION 3": None,
+            "NON-LEAD VERIFICATION 4": None,
             "FIELD VERIFICATION DATE_2": None,
             "COMMENTS_2": None,
             ###
@@ -476,6 +477,10 @@ def translate(input_data):
         # Installation Date Specific
         new_row_dict["INSTALLATION DATE_2"] = row["Private Installation Dates"]
 
+        # "Diameter (in inches)"
+        if row["Private Diameters"] != "99":
+            new_row_dict["DIAMETER (IN INCHES)_2"] = row["Private Diameters"]
+
         """
         # Verification method priority
         
@@ -522,9 +527,9 @@ def translate(input_data):
                 comments_priv.append("Records review indicates non-lead material")
 
         if len(private_verification_methods) >= 1:
-            new_row_dict["NON-LEAD VERIFICATION 1_2"] = private_verification_methods[0]
+            new_row_dict["NON-LEAD VERIFICATION 3"] = private_verification_methods[0]
         if len(private_verification_methods) >= 2:
-            new_row_dict["NON-LEAD VERIFICATION 2_2"] = private_verification_methods[1]
+            new_row_dict["NON-LEAD VERIFICATION 4"] = private_verification_methods[1]
 
         # Date of Field Verification
         private_most_recent_date = None
@@ -601,6 +606,8 @@ def translate(input_data):
                 and row["Plumbing Contains Lead Solder"] == "No"
             ):
                 new_row_dict["INTERIOR PLUMBING"] = f"NO LEAD OR GALVANIZED PRESENT"
+            if not new_row_dict["INTERIOR PLUMBING"]:
+                new_row_dict["INTERIOR PLUMBING"] = f"UNKNOWN"
 
         # # Current LCR Sampling Site?
         # if row["Sample Site Status"] == "Yes":
@@ -654,13 +661,20 @@ def translate_to_xlsm(input_csv, input_xlsm, output_xlsm):
         # start_row = 9
         # start_col = 5
         curr_row = 10
-        curr_col = 5
+        curr_col = 6
 
         for row in data:
-            for val in row.values():
-                worksheet.cell(row=curr_row, column=curr_col, value=val)
-                curr_col += 1
-            curr_col = 5
+            for item in row.items():
+                worksheet.cell(row=curr_row, column=curr_col, value=item[1])
+                if item[0] in [
+                    "UNIQUE SERVICE LINE ID",
+                    "NON-LEAD VERIFICATION 2",
+                    "NON-LEAD VERIFICATION 4",
+                ]:
+                    curr_col += 2
+                else:
+                    curr_col += 1
+            curr_col = 6
             curr_row += 1
 
         workbook.save(output_xlsm)
@@ -669,8 +683,8 @@ def translate_to_xlsm(input_csv, input_xlsm, output_xlsm):
 # Example usage
 input_csv = "LancasterPA_inventory-export_20251203202621.csv"  # Replace with your input CSV file
 output_csv = "translated_output.csv"  # Replace with the output CSV file
-translate_to_csv(input_csv, output_csv)
+# translate_to_csv(input_csv, output_csv)
 
 input_xlsm = "SERVICE_LINE_INVENTORY_FORM_2025.xlsm"
 output_xlsm = "output_v4.xlsm"
-# translate_to_xlsm(input_csv, input_xlsm, output_xlsm)
+translate_to_xlsm(input_csv, input_xlsm, output_xlsm)
