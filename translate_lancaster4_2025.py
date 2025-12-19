@@ -5,6 +5,9 @@ from typing import List, Optional, Union
 
 import openpyxl
 
+# Variables
+CHANGE_MATERIAL_AND_STATUS_FROM_PREDICT_SCORE = True
+
 
 # Function to map material codes to material types
 def material(material: str) -> Optional[str]:
@@ -186,6 +189,8 @@ def translate(input_data):
 
     # Dictionary to track the count of addresses
     address_count = {}
+    count_utility_predict_changes = 0
+    count_private_predict_changes = 0
 
     # for row in input_data:
     for row in (r for r in input_data if r.get("PWS ID") != "TRAINING"):
@@ -345,6 +350,21 @@ def translate(input_data):
 
         ################ NEW ################
 
+        if CHANGE_MATERIAL_AND_STATUS_FROM_PREDICT_SCORE:
+            # Update Material based on Predict Score Utility
+            if (
+                row["Predict Score Utility"]
+                and float(row["Predict Score Utility"]) <= 0.1
+                and row["Utility Status"] == "Lead Status Unknown"
+            ):
+                row["Utility Status"] = "Non-Lead"
+                row["Utility Materials"] = "UNK-NL"
+                new_row_dict["SEGMENT 1 MATERIAL"] = material("UNK-NL")
+                # comments_ut.append(
+                #     "Material updated to UNK-NL based on Predict Score Utility"
+                # )
+                count_utility_predict_changes += 1
+
         """
         # Verification method priority
         
@@ -353,18 +373,6 @@ def translate(input_data):
         3. Installation Date After Lead Ban
         4. Stats/Modeling [B) MODELING/STATISTICAL ANALYSIS]
         5. Records Review
-        
-        
-        Records - Other
-        -Field Inspection
-        -Diameter > 2"
-        -Installation Date After Lead Ban
-        -Records Validation with Field Inspection
-        Installation Records
-        Other
-        -Field Inspection | Installation Date After Lead Ban
-        -Records - Other | Field Inspection
-
         """
         ### Utility Material Method
         utility_verification_methods = []
@@ -480,6 +488,21 @@ def translate(input_data):
         # "Diameter (in inches)"
         if row["Private Diameters"] != "99":
             new_row_dict["DIAMETER (IN INCHES)_2"] = row["Private Diameters"]
+
+        if CHANGE_MATERIAL_AND_STATUS_FROM_PREDICT_SCORE:
+            # Update Material based on Predict Score Private
+            if (
+                row["Predict Score Private"]
+                and float(row["Predict Score Private"]) <= 0.1
+                and row["Private Status"] == "Lead Status Unknown"
+            ):
+                row["Private Status"] = "Non-Lead"
+                row["Private Materials"] = "UNK-NL"
+                new_row_dict["SEGMENT 2 MATERIAL"] = material("UNK-NL")
+                # comments_ut.append(
+                #     "Material updated to UNK-NL based on Predict Score Private"
+                # )
+                count_private_predict_changes += 1
 
         """
         # Verification method priority
@@ -617,6 +640,8 @@ def translate(input_data):
 
         # Store the modified row
         output_data.append(new_row_dict)
+    print("utility predict changes:", count_utility_predict_changes)
+    print("private predict changes:", count_private_predict_changes)
     return output_data
 
 
@@ -681,7 +706,7 @@ def translate_to_xlsm(input_csv, input_xlsm, output_xlsm):
 
 
 # Example usage
-input_csv = "LancasterPA_inventory-export_20251203202621.csv"  # Replace with your input CSV file
+input_csv = "LancasterPA_inventory-export_20251219204346.csv"  # Replace with your input CSV file
 output_csv = "translated_output.csv"  # Replace with the output CSV file
 # translate_to_csv(input_csv, output_csv)
 
